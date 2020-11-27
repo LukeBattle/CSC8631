@@ -39,7 +39,7 @@ Both of these elements will be explored and examined both individually and in re
 ## Data Understanding
 
 ```{r echo=FALSE}
-table1 = data.frame(Runs, format(round(percentage_correct, 2)))
+table1 = correct_questions
 knitr::kable(correct_questions, col.names=c("Run", "% Correct"), align = "c")
 ```
 
