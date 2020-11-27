@@ -1,0 +1,76 @@
+---
+title: "CSC8631 Project"
+author: "Luke Battle"
+date: "22/11/2020"
+output:
+  pdf_document: default
+  PDF: default
+---
+
+```{r setup, include=FALSE}
+#knitr setup
+knitr::opts_chunk$set(include = TRUE)
+knitr::opts_knit$set(root.dir= normalizePath('..'))
+```
+
+```{r include=FALSE}
+#load project
+library(ProjectTemplate)
+load.project()
+
+#run analysis
+source("src/first_analysis.R")
+
+```
+
+## Introduction/Business Understanding
+
+For the past several years, Newcastle University has ran a free online course called *Cyber Security: Safety at Home, Online, in life*. Several data sets have been compiled each time the course has been ran, detailing several facets of the user experience throughout the course. Newcastle University seeks to utilise this data to enhance the quality of material taught outside of the classroom, and ultimately promote learner engagement with the course and Newcastle's wider online resources. To achieve this, different elements of the collected data will be examined over consecutive runs, with the aim of identifying any trends both within and between them that may indicate an area where user engagement could be improved.   
+
+
+## The Data
+
+The data sets used in this report are details of user engagement with the videos and quizzes that feature within the course. Within the video data, I have made the assumption that all videos are the same in each run. This assumption has been made on the basis that the video duration is the same for every run of the course, thus it is unlikely that any changes have been made.
+
+
+Both of these elements will be explored and examined both individually and in relation to each other, with the ultimate aim of providing feedback to Newcastle University on how it can enhance the user experience of the course. This analysis will be constructed using CRISP-DM methodology and, as such, will be structured to reflect this.
+
+
+## Data Understanding
+
+```{r echo=FALSE}
+table1 = data.frame(Runs, format(round(percentage_correct, 2)))
+knitr::kable(correct_questions, col.names=c("Run", "% Correct"), align = "c")
+```
+
+
+
+## Data Preparation
+
+
+## Modelling
+
+
+## Evaluation
+
+
+## Deployment
+
+
+
+
+
+
+```{r Run_plot, echo=FALSE, message=FALSE, warning=FALSE}
+# load run plot
+run_plot
+```
+
+
+
+
+
+
+
+
+
