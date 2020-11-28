@@ -20,12 +20,12 @@ cache('video_files')
 
 for(i in 1:length(video_files)) {
   video_stats = read.csv(paste("data/",video_files[i],sep = ""))
-  if (identical(colnames(video_stats),video_col_names)==FALSE) stop(paste("Column Names have changed for", video_files[i]))
-  if (identical(video_stats$step_position,video_names)==FALSE) stop(paste("The videos have changed for", video_files[i]))
+  #if (identical(colnames(video_stats),video_col_names)==FALSE) stop(paste("Column Names have changed for", video_files[i]))
+  #if (identical(video_stats$step_position,video_names)==FALSE) stop(paste("The videos have changed for", video_files[i]))
   Run = rep(i + first_video_run - 1, nrow(video_stats))
   video_stats = cbind(video_stats, Run)
   video_df = rbind(video_df,video_stats)
-}s
+}
 
 cache('video_df')
 

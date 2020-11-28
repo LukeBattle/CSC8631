@@ -29,7 +29,9 @@ In this report, we will use the CRISP-DM method to analyse a data set. This will
 
 ## Business Understanding 
 
-The first step in performing our CRISP-DM analysis is to gain an understanding of the business motivation for the analysis, with the primary goal of this analysis being to enhance Newcastle University's online resources. Specifcally, for the past several years, Newcastle University has ran a free online course called *Cyber Security: Safety at Home, Online, in life*. Several data sets have been compiled each time the course has been ran, detailing several facets of the user experience throughout the course.  Newcastle University seeks to utilise this data to enhance the quality of material taught outside of the classroom, and ultimately promote learner engagement with the course and Newcastle's wider online resources. To achieve this, different elements of the collected data will be examined over consecutive runs, with the aim of identifying any trends both within and between them that may indicate an area where user engagement could be improved.   
+The first step in performing our CRISP-DM analysis is to gain an understanding of the business motivation for the analysis, with the primary goal of this analysis being to enhance Newcastle University's online resources. Specifcally, for the past several years, Newcastle University has ran a free online course called *Cyber Security: Safety at Home, Online, in life*. Several data sets have been compiled each time the course has been ran, detailing several facets of the user experience throughout the course.  Newcastle University seeks to utilise this data to enhance the quality of material taught outside of the classroom, and ultimately promote learner engagement with the course and Newcastle's wider online resources. To achieve this, different elements of the collected data will be examined over consecutive runs, with the aim of identifying any trends both within and between them that may indicate an area where user engagement could be improved.  
+
+Both of these elements will be explored and examined both individually and in relation to each other, with the ultimate aim of providing feedback to Newcastle University on how it can enhance the user experience of the course. This analysis will be constructed using CRISP-DM methodology and, as such, will be structured to reflect this.
 
 
 ## Data Understanding 
@@ -56,22 +58,52 @@ Where each individual in the file is given by the video that the variables relat
 video_file_raw$title
 ```
 
+An additional aspect of the video stats files that is important to consider for our analysis is whether the videos used in the course are the same for each run. If they are not, we could not fairly compare the efficacy of each video against each other when considering the results across runs. However, by examining the "duration" variable in each file we can see that this is identical for each video in every run, so we can assume for the purposes of this analysis that the videos have not been changed between runs.
+
 For the question response data set, we can compute the same high level analysis. However, unlike the video stats files this file has been prepared for all 7 runs of the course, and is not in exactly the same format. Each file has `r format(round(ncol(question_file_raw)))` columns, however the rows in each data file is dependent on how many learners took part in the corresponding run, and so varies between files. In total, all 7 files have `r format(round(nrow(question_df)), big.mark = ",")` rows. 
 
 ### Data Quality
 
-We can now assess the data quality of each of these data sets. 
+We can now assess the data quality of each of these data sets using the dlookr package to see if there is any missing data in each file. Starting with the video stats file from the third run of the course, we calculate the following:
 
-The data sets used in this report are details of user engagement with the videos and quizzes that feature within the course. Within the video data, I have made the assumption that all videos are the same in each run. This assumption has been made on the basis that the video duration is the same for every run of the course, thus it is unlikely that any changes have been made.
+```{r echo=TRUE}
+diagnose(video_file_raw)
+```
 
+The above table shows that there is no missing data for this video stats file, and analysis on the rest of the files for video stats gives the same result. Now, we can apply the same process to the question file from the first run.
 
-Both of these elements will be explored and examined both individually and in relation to each other, with the ultimate aim of providing feedback to Newcastle University on how it can enhance the user experience of the course. This analysis will be constructed using CRISP-DM methodology and, as such, will be structured to reflect this.
+```{r echo=TRUE}
+diagnose(question_file_raw)
+```
+
+The results indicate that all of the data for the "cloze_response" variable is missing, so we can consider removing this variable when we prepare our data files for analysis. Aside from this variable, the remainder of the data is intact. Analysis on this file for the rest of the course runs yields the same result, in that all data for "cloze_response" is absent whilst the rest of the data is of good quality.
 
 
 
 ## Data Preparation
 
-In order to prepare the data for analysis we will first seek to compile all runs into one file 
+In order to prepare the data for analysis it would be helpful to compile all of the files for a specific aspect of the user experience, such as video stats, into one file. This will allow us to easily perform analysis to see how the video stats changed over runs. Additionally, as we have assumed that the videos are unchanged between runs, this will give us more data to assess video performance against each other. In the previous section, we verified that the video stats data files have no issues with regards to missing data, and so there is no need to take any further cleaning steps. Additionally, as previously verified, each video file is in the same format, with the variables in the same order. Therefore we can bind each data frame under the preceding one. However, it would be useful for our subsequent analysis for us to include an identifier of what iteration of the course the data corresponds to. This has been added into the data frame as the variable, "Run". 
+
+We now have a a data frame featuring all of the available data for the video stats from runs 3 to 7 of the course. However, this includes 29 variables. It would therefore be useful to refine this data set into the data that we would like to specifically assess and visualise in our subsequent analysis. Before performing a deeper analysis on the video stats data that we have prepared, it would be useful to first motivate this analysis. One way of doing this would be to look for a relationship between the viewing statistics per run and percentage of questions answered correctly in the question response data set. More specifically, does the amount of people who viewed the videos in each course iteration suggest anything about how many questions will be answered correctly? To investigate this, the variables that will be of most use are "Run" and the percentage of learners that viewed a set proportion of the video, ranging from 5% to 100%. We will calculate the mean average over all videos in a run of the course, for each proportion of the video viewed. In order to effectively visualise this, we can then convert this data frame to a long format, as below:
+
+```{r echo=TRUE}
+head(viewing_avg_long)
+```
+
+For the question respnse files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video stats data frame, however we established in the previous section that the variable in the question response data, "cloze response", is empty across all files. We should therefore remove this variable from our final data set to clean it. In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1. If this question has been answered incorrectly it will contain a 0. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course.
+
+Once we have motivated our further analysis of the video stats, we can begin evaluating the effectiveness of each video in order to seek areas of improvement. Before beginning this analysis, we should prepare the data in the appropriate format. We will use similar fields that were used in our previous data construction, but we will use the field "step_position" instead of "Run" as an identifier for each unique video. "Step_position" is a code that is assigned to each video in the course, so each step_position will correspond to a video title, it simply allows for a more concise way of representing the same data. We can then take a mean average over every run for each video , which will inform us of how much of each video was watched by a percentage of users. To make visualisation of this data set easier, we will then convert to long format to give us the below:
+
+```{r echo=TRUE}
+head(step_avg_long)
+```
+
+In order to judge more specifically which videos lost their audience the most, we will add a new variable to this data set, "percentage_drop_off", that calculates the difference in the percentage who viewed 5% of the video and the percentage who viewed 95% of the video. Why we have chosen these values will be discussed later in our analysis. Note that this data set is in wide form for ease of calculation of the "percentage_drop_off" variable. Thus, giving us the below data frame:
+
+```{r echo=TRUE}
+head(step_avg_wide)
+```
+
 
 ## Modelling
 
