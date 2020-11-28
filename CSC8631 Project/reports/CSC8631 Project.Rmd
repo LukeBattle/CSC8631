@@ -34,7 +34,26 @@ The first step in performing our CRISP-DM analysis is to gain an understanding o
 
 ## Data Understanding 
 
-Next, before beginning our analysis it is important to fully assess the data, so that we can make informed decisions about the portions of the data that should constitute the foundations of our analysis. In total, Newcastle University has provided 53 csv files that describe a range of features of user interaction with the MOOC over 7 runs of the course. These runs span from September 2016 to  September 2018. For every run there is a file detailing "Archetype-survey-reponses", "Enrolments", "Leaving Survey Response", "Question Response", "Step Activity" and "Weekly Sentiment Survey Response". In addition, from run 2 to 7 a file on the "Team Members" is included, and from run 3 to 7 there is also a file on the "Video Stats". However, the data quality within some of these files is quite poor. For instance, "Leaving Survey Response", "Archetype Survey Response" and "Weekly Sentiment Survey Response" are blank except for their column headers, so they will not feature in this analysis. The "enrolments" data set does contain data, however the quality of it is poor. For `r format(round(mean(percentage_of_missing_enrolments),2))`% of the individuals in the data set, the only data available is the detected country of origin and enrollment date. These individuals are missing useful demographic indicators such as "gender, age range, education level and employment status. Due to the poor quality of the data this will not be used in the analysis. 
+Next, before beginning our analysis it is important to fully assess the data, so that we can make informed decisions about the portions of the data that should constitute the foundations of our analysis. In total, Newcastle University has provided 53 csv files that describe a range of features of user interaction with the MOOC over 7 runs of the course. These runs span from September 2016 to  September 2018. For every run there is a file detailing "Archetype-survey-reponses", "Enrolments", "Leaving Survey Response", "Question Response", "Step Activity" and "Weekly Sentiment Survey Response". In addition, from run 2 to 7 a file on the "Team Members" is included, and from run 3 to 7 there is also a file on the "Video Stats". However, the data quality within some of these files is quite poor. For instance, "Leaving Survey Response" (**NOTE THAT THIS HAS BEEN USED IN LATER RUNS**), "Archetype Survey Response" and "Weekly Sentiment Survey Response" are blank except for their column headers, so they will not feature in this analysis. The "enrolments" data set does contain data, however the quality of it is poor. For `r format(round(mean(percentage_of_missing_enrolments),2))`% of the individuals in the data set, the only data available is the detected country of origin and enrollment date. These individuals are missing useful demographic indicators such as "gender, age range, education level and employment status. Due to the poor quality of the data this will not be used in the analysis. Out of the remaining data sets, video stats and question response may be a good place to start in assessing the efficacy of the MOOC course. 
+
+The video stats files are included for course runs 3 to 7. The files each have dimensions:
+
+```{r echo=FALSE}
+dim(video_file_raw)
+```
+
+With the following variables:
+
+```{r echo=FALSE}
+colnames(video_df)
+```
+
+Where each individual in the file is given by the video that the variables relate to. Which are the following:
+
+```{r echo=FALSE}
+video_file_raw$title
+```
+
 
 The data sets used in this report are details of user engagement with the videos and quizzes that feature within the course. Within the video data, I have made the assumption that all videos are the same in each run. This assumption has been made on the basis that the video duration is the same for every run of the course, thus it is unlikely that any changes have been made.
 

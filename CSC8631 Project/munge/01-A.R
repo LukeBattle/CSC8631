@@ -14,6 +14,11 @@ for(i in 1:length(video_files)) {
 
 cache('video_df')
 
+video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
+
+cache('video_file_raw')
+
+
 question_df = NULL
 
 question_files = dir("data",pattern = "question-response")
@@ -32,6 +37,12 @@ question_df = mutate(question_df,correct_binary = ifelse(correct =="true",1,0))
 question_df$cloze_response = NULL 
 
 cache('question_df')
+
+
+question_file_raw = read.csv(paste("data/",question_files[1],sep = ""))
+
+cache('question_file_raw')
+
 
 #group by run number and show mean viewing percentage per run
 viewing_avg_long = video_df %>%
