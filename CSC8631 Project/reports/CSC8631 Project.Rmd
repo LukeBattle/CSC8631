@@ -109,17 +109,37 @@ head(step_avg_wide)
 
 Now that both data sets are appropriately formatted, we will begin our analysis of the data. First of all, we will investigate if there is a relationship between the percentage of people who watched the videos in the course, and their results in the multiple choice quiz. To examine this, we will calculate the percentage of questions answered correctly for the each run of the course. 
 
-```{r}
+```{r echo=FALSE}
 knitr::kable(correct_questions, col.names=c("Run", "% Correct"), align = "c", digits = 2)
 ```
 
-To compare this to the percentage of people who watched the videos, we will take an average over each run of the percentage of people that watched the video. To be fully clear in our analysis, we will also split these average out into percentage of the video viewed. Contrasting this with a plot of the above percentages of questions answered correctly, gives us the following plot:
+To compare this to the percentage of people who watched the videos, we will first take an average over each run of the percentage of people that watched the video. To be fully clear in our analysis, we will also split these average out into percentage of the video viewed. This gives the following plot:
+
+```{r echo=FALSE}
+run_plot
+```
+
+In the above plot, we can observe a steady decline of people watching the video as it progresses up until 95% of the video. A steep decline can then be seen after this with the amount of people who viewed 100% of the video. This intuitively makes sense as many viewers may end the video when there are only a few seconds left when it is obvious that the the important information in the video has been given. This means that the percentage of people that viewed the entire video is not the best metric by which we can judge how many people watched the video. The percentage of users that watched 95% of the video would be a more suitable metric, as they have still effectively watched the entirety of the video just may have not watched the final few seconds. We can now visualise the percentage of users that viewed 95% of all of the videos for each run of the course, and compare this to a plot of how many questions were answered correctly for each course iteration:
+
 
 ```{r echo=FALSE}
 grid.arrange(question_plot,run_plot2,nrow = 2)
 ```
 
-From this plot we can see clearly that in the fourth run of the MOOC course, there was a drop both the percentage of questions answered correctly and the amount of people who viewed the course videos. We can observe that 
+From this plot we can see clearly that in the fourth run of the MOOC course, there was a drop both in the percentage of questions answered correctly and the amount of people who viewed the course videos. Additionally, in the fifth run both the percentage of people who watched 95% of the videos increased along with the percentage of questions answered correctly. In the sixth run, both the video viewership and questions answered correctly stay relatively high. However, in the seventh run the questions answered correctly stays high whilst the percentage of people who fully watched the videos plummets. In the third run, we can also observe that the highest percentage of questions are answered correctly whilst the percentage of users that watched 95% of the videos remained quite low. These observations would suggest that there is a loose relationship between these two, as we see a similar trend specifically from run 4 to 6. Having said this, rather than causing more questions to be answered correctly, a higher percentage of users that viewed the videos may indicate more interested users in that run who may be more interested in the course and thus excel more in the questions on average. 
+
+Now that we have demonstrated there is some relationship between the use of the video and outcome of the multiple choice quiz, we should look further into how the videos might be improved. In order to assess this, we will assess the average percentage of users who viewed the videos for varying lengths of time, for each video in the course. As previously noted, we are assuming that the videos have remained unaltered over runs due to the identical duration, so these average will be taken for each video over every run. Plotting the results of this gives us the following plot:
+
+```{r echo=FALSE}
+step_plot
+```
+
+
+
+
+```{r}
+lost_viewer_plot
+```
 
 
 
@@ -131,13 +151,6 @@ From this plot we can see clearly that in the fourth run of the MOOC course, the
 
 
 
-
-
-
-```{r Run_plot, echo=FALSE, message=FALSE, warning=FALSE}
-# load run plot
-run_plot
-```
 
 
 
