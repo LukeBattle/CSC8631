@@ -22,7 +22,6 @@ step_plot = ggplot(data = step_avg_long,aes(x = viewed, y = percentage, color = 
   geom_line()
 
 
-min(video_df$Run)
 
 question_plot = ggplot(data = filter(correct_questions, Runs >= min(video_df$Run)), aes(x = Runs, y = percentage_correct)) +
   geom_point() + 
