@@ -7,6 +7,16 @@ step_avg_wide = step_avg_long %>%
 
 cache('step_avg_wide')
 
+#arrange step_avg_wide in descending order by percentage drop off
+
+highest_audience_drop = step_avg_wide %>%
+  arrange(desc(percentage_drop_off))
+
+highest_audience_drop_videos = highest_audience_drop[1:5,]$step_position
+
+cache('highest_audience_drop_videos')
+
+
 #investigate proportion of correct answers per run
 Runs = sort(unique(question_df$Run), decreasing = FALSE)
 
