@@ -134,13 +134,28 @@ Now that we have demonstrated there is some relationship between the use of the 
 step_plot
 ```
 
+As this plot appears cluttered, it would be useful to only focus on a selection of the videos that had the highest drop off in audience as the video progressed. We will therefore filter the above plot to show only the top 5 videos with the highest % drop in audience to produce the below plot:
+
+```{r echo=FALSE}
+step_plot_filtered
+```
+
+This plot indicates that video with step position 1.5 loses the highest percentage of it's audience. This corresponds to the video called "Privacy online and offline". What is particularly notable with this video, is the steep drop in audience from 5% to 25% of the video. Other videos in the above two plots have a fairly consistent gradient of audience decline as the video progresses. This video displays a significantly higher drop in audience that any other video on the course over all runs from 5% to 95% of the video, as shown in the below column chart:
 
 
-
-```{r}
+```{r echo=FALSE}
 lost_viewer_plot
 ```
 
+Again, this shows that the video with step position 1.5, "Privacy online and offline", loses over 20% of the audience from 5% of th video to 95% of it. Comparatively, the video with step position 2.11, "Exploring vulnerabilities in online payments" has slightly less than a 15% loss in viewers. In contrast to these videos, we can observe that the video with step position 2.17, "The million dollar contactless payment", has the highest viewer retention and loses less than 5% of the audience.
+
+Whilst many factors could contribute to how engaged a learner is with a video, an aspect from the video stats data that we could investigate as a driver of this is the duration of the video. To visualise this, we can create a plot of video duration against the average percentage viewed over the course runs. Moreover, we will plot this for the percentage of people that watched 95% of the video, due to the aforementioned drop in viewers who watched all 100% of it. 
+
+```{r echo=FALSE}
+duration_plot
+```
+
+The above plot shows a clear negative correlation between the length of the video and the percentage of people who watched 95% of it. Interestingly, this correlation is particularly prevalent in the first 300 seconds. After 300 seconds, the percentage of the retained learner throughout the video increased again, but not in the vicinity of retention shown in the videos with small duration. 
 
 
 ## Evaluation

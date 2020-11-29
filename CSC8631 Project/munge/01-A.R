@@ -86,7 +86,7 @@ cache('viewing_avg_long')
 
 #group by run number and show mean viewing percentage per run
 step_avg_long = video_df %>%
-  group_by(step_position) %>%
+  group_by(step_position,video_duration) %>%
   summarise(
     viewed_5_percent = mean(viewed_five_percent),
     viewed_10_percent = mean(viewed_ten_percent),
@@ -102,6 +102,7 @@ step_avg_long = video_df %>%
 for(i in c(5,10,25,50,75,95,100)) {
   step_avg_long$viewed[step_avg_long$viewed == paste("viewed_",i,"_percent",sep = "")] = i
 }
+
 
 #convert numbered viewing percentages from character to number
 step_avg_long$viewed = as.numeric(step_avg_long$viewed)
