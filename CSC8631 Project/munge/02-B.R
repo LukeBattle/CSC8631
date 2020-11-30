@@ -20,19 +20,20 @@ question_file_raw = read.csv(paste("data/",question_files[1],sep = ""))
 #store raw file in cache
 cache('question_file_raw')
 
-#initalise question-response data frame prior to data preparation
-question_df = NULL
+#create empty list with length equal to amount of question files
+question_list = vector("list", length(question_files))
 
-#add corresponding run number and append each file to question-response data data frame
-for(i in 1:length(question_files)) {
+#loop through question files, assign corresponding run to data then add to appropriate position in previously defined list
+for (i in 1:length(question_files)) {
   question_response = read.csv(paste("data/",question_files[i],sep = ""))
-  Run = rep(i + min(question_files_numeric) - 1, nrow(question_response))
+  Run = rep(question_files_numeric[i], nrow(question_response))
   question_response = cbind(question_response, Run)
-  question_df = rbind(question_df,question_response)
+  question_list[[i]]=question_response
 }
 
-#add a binary indicator of if question was answered true or false
-question_df = mutate(question_df,correct_binary = ifelse(correct =="true",1,0))
+#use bind_rows to take data in list and create data frame
+question_df = bind_rows(question_list) %>%
+  mutate(correct_binary = ifelse(correct =="true",1,0))
 
 #remove empty cloze_response column
 question_df$cloze_response = NULL 
@@ -42,13 +43,13 @@ cache('question_df')
 
 
 #investigate proportion of correct answers per run
-Runs = sort(unique(question_df$Run), decreasing = FALSE)
+Runs = sort(unique(question_files_numeric), decreasing = FALSE)
 
 #initialise percentage correct vector with length equal to amount of runs
 percentage_correct = numeric(length(Runs))
 
-#loop through each run in quetion_df, calculate percentage questions answered correctly and store in percentage correct vector
-for (i in sort(unique(question_df$Run),decreasing = FALSE)) {
+#loop through each run in question_df, calculate percentage questions answered correctly and store in percentage correct vector
+for (i in Runs) {
   filtered_q_df = filter(question_df,Run == i)
   total = nrow(filtered_q_df)
   question_correct = sum(filtered_q_df$correct_binary)

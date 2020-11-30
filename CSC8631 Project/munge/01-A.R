@@ -29,25 +29,27 @@ cache('video_files')
 #set raw video-stats data file for data understanding portion of report
 video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
 
+str(question_file_raw)
+
 #cache raw video-stats file
 cache('video_file_raw')
+             
+#create empty list with length equal to amount of video files
+video_list = vector("list", length(video_files))
 
-#initialise data frame for video-stats data preparation
-video_df = NULL
-
-#loop through files in video_files vector, add Run number of course and append columns used in analysis to video_df data frame 
-for(i in 1:length(video_files)) {
+#loop through video files, assign corresponding run to data then add to appropriate position in previously defined list
+for (i in 1:length(video_files)) {
   video_stats = read.csv(paste("data/",video_files[i],sep = ""))
-  #if (identical(colnames(video_stats),video_col_names)==FALSE) stop(paste("Column Names have changed for", video_files[i]))
-  #if (identical(video_stats$step_position,video_names)==FALSE) stop(paste("The videos have changed for", video_files[i]))
-  Run = rep(i + min(video_files_numeric) - 1, nrow(video_stats))
+  Run = rep(video_files_numeric[i], nrow(video_stats))
   video_stats = cbind(video_stats, Run)
-  video_df = rbind(video_df,video_stats[,c("Run", "title", "step_position", "video_duration","viewed_five_percent",
-                                           "viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
-                                           "viewed_seventyfive_percent", "viewed_ninetyfive_percent","viewed_onehundred_percent")])
+  video_list[[i]]=video_stats[,c("Run", "title", "step_position", "video_duration","viewed_five_percent",
+                                 "viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
+                                 "viewed_seventyfive_percent", "viewed_ninetyfive_percent","viewed_onehundred_percent")]
 }
 
-video_df = video_df %>%
+#use bind_rows to take data in list and create data frame, then add new column that finds difference between 
+#the percentage of learners that viewed 5% and 95% of the videos
+video_df = bind_rows(video_list) %>%
   mutate(percentage_drop_off = viewed_five_percent - viewed_ninetyfive_percent)
 
 #cache video_df
@@ -59,14 +61,13 @@ video_df_long = video_df %>%
                names_to = "viewed")
 
 #convert viewed variable to integer for plotting
-  video_df_long$viewed[video_df_long$viewed == "viewed_five_percent"] = 5
-  video_df_long$viewed[video_df_long$viewed == "viewed_ten_percent"] = 10 
-  video_df_long$viewed[video_df_long$viewed == "viewed_twentyfive_percent"] = 25
-  video_df_long$viewed[video_df_long$viewed == "viewed_fifty_percent"] = 50 
-  video_df_long$viewed[video_df_long$viewed == "viewed_seventyfive_percent"] = 75 
-  video_df_long$viewed[video_df_long$viewed == "viewed_ninetyfive_percent"] = 95
-  video_df_long$viewed[video_df_long$viewed == "viewed_onehundred_percent"] = 100
-  video_df_long$viewed = as.integer(video_df_long$viewed)
+variables_to_change = c("viewed_five_percent","viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
+"viewed_seventyfive_percent", "viewed_ninetyfive_percent","viewed_onehundred_percent")
+
+variables_changed_to = as.integer(c(5,10,25,50,75,95,100))
+
+video_df_long$viewed[video_df_long$viewed == variables_to_change] = as.integer(variables_changed_to)
+video_df_long$viewed = as.integer(video_df_long$viewed)
 
 #cache long form video_df data frame
 cache('video_df_long')
