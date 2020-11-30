@@ -160,6 +160,9 @@ The above plot shows a clear negative correlation between the length of the vide
 
 ## Evaluation
 
+- A lot of assumptions made in analysis
+-- assuming videos haven't changed
+-- correlations observed with video duration and question vs video proportion watched could have countless other drivers
 
 
 ## Deployment

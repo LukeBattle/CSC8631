@@ -2,6 +2,7 @@
 first_question_run = 1
 first_video_run = 3
 
+#recall previous column names for data checks
 video_col_names = c("step_position","title","video_duration","total_views","total_downloads","total_caption_views","total_transcript_views",
               "viewed_hd","viewed_five_percent","viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
               "viewed_seventyfive_percent","viewed_ninetyfive_percent","viewed_onehundred_percent","console_device_percentage",
@@ -10,101 +11,68 @@ video_col_names = c("step_position","title","video_duration","total_views","tota
               "north_america_views_percentage","south_america_views_percentage","africa_views_percentage",
               "antarctica_views_percentage")
 
+#recall previous video step_position for checks
 video_names = c(1.10,1.14,1.17,1.19,1.50,2.10,2.11,2.17,2.40,3.10,3.14,3.15,3.20)
 
-video_df = NULL
-
+#create vector of video-stats files in data directory of project
 video_files = dir("data",pattern = "video-stats")
 
+#cache the list
 cache('video_files')
 
+#set raw video-stats data file for data understanding portion of report
+video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
+
+#cache raw video-stats file
+cache('video_file_raw')
+
+#initialise data frame for video-stats data preparation
+video_df = NULL
+
+#loop through files in video_files vector, add Run number of course and append columns used in analysis to video_df data frame 
 for(i in 1:length(video_files)) {
   video_stats = read.csv(paste("data/",video_files[i],sep = ""))
   #if (identical(colnames(video_stats),video_col_names)==FALSE) stop(paste("Column Names have changed for", video_files[i]))
   #if (identical(video_stats$step_position,video_names)==FALSE) stop(paste("The videos have changed for", video_files[i]))
   Run = rep(i + first_video_run - 1, nrow(video_stats))
   video_stats = cbind(video_stats, Run)
-  video_df = rbind(video_df,video_stats)
+  video_df = rbind(video_df,video_stats[,c("Run", "title", "step_position", "video_duration","viewed_five_percent",
+                                           "viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
+                                           "viewed_seventyfive_percent", "viewed_ninetyfive_percent","viewed_onehundred_percent")])
 }
 
+video_df = video_df %>%
+  mutate(percentage_drop_off = viewed_five_percent - viewed_ninetyfive_percent)
+
+#cache video_df
 cache('video_df')
 
-video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
+#convert video_df to long format for plotting
+video_df_long = video_df %>%
+  pivot_longer(viewed_five_percent:viewed_onehundred_percent, 
+               names_to = "viewed")
 
-cache('video_file_raw')
+#convert viewed variable to integer for plotting
+  video_df_long$viewed[video_df_long$viewed == "viewed_five_percent"] = 5
+  video_df_long$viewed[video_df_long$viewed == "viewed_ten_percent"] = 10 
+  video_df_long$viewed[video_df_long$viewed == "viewed_twentyfive_percent"] = 25
+  video_df_long$viewed[video_df_long$viewed == "viewed_fifty_percent"] = 50 
+  video_df_long$viewed[video_df_long$viewed == "viewed_seventyfive_percent"] = 75 
+  video_df_long$viewed[video_df_long$viewed == "viewed_ninetyfive_percent"] = 95
+  video_df_long$viewed[video_df_long$viewed == "viewed_onehundred_percent"] = 100
+  video_df_long$viewed = as.integer(video_df_long$viewed)
 
+#cache long form video_df data frame
+cache('video_df_long')
 
-question_df = NULL
+#arrange video_df in descending order by percentage drop off per video
+highest_audience_drop = video_df %>%
+  group_by(step_position) %>%
+  summarise(percentage_drop_off = mean(percentage_drop_off)) %>%
+  arrange(desc(percentage_drop_off))
 
-question_files = dir("data",pattern = "question-response")
+#save 5 videos with highest percentage drop off in viewers
+highest_audience_drop_videos = highest_audience_drop[1:5,]$step_position
 
-cache('question_files')
-
-
-for(i in 1:length(question_files)) {
-  question_response = read.csv(paste("data/",question_files[i],sep = ""))
-  Run = rep(i + first_question_run - 1, nrow(question_response))
-  question_response = cbind(question_response, Run)
-  question_df = rbind(question_df,question_response)
-}
-
-question_df = mutate(question_df,correct_binary = ifelse(correct =="true",1,0))
-
-question_df$cloze_response = NULL 
-
-cache('question_df')
-
-
-question_file_raw = read.csv(paste("data/",question_files[1],sep = ""))
-
-cache('question_file_raw')
-
-
-#group by run number and show mean viewing percentage per run
-viewing_avg_long = video_df %>%
-  group_by(Run) %>%
-  summarise(
-    viewed_5_percent = mean(viewed_five_percent),
-    viewed_10_percent = mean(viewed_ten_percent),
-    viewed_25_percent = mean(viewed_twentyfive_percent),
-    viewed_50_percent = mean(viewed_fifty_percent),
-    viewed_75_percent = mean(viewed_seventyfive_percent),
-    viewed_95_percent = mean(viewed_ninetyfive_percent),
-    viewed_100_percent = mean(viewed_onehundred_percent)
-  ) %>%
-  gather(viewed,percentage,viewed_5_percent:viewed_100_percent)
-
-#convert viewing percentages to numbers
-for(i in c(5,10,25,50,75,95,100)) {
-  viewing_avg_long$viewed[viewing_avg_long$viewed == paste("viewed_",i,"_percent",sep = "")] = i
-}
-
-#convert numbered viewing percentages from character to number
-viewing_avg_long$viewed = as.numeric(viewing_avg_long$viewed)
-
-cache('viewing_avg_long')
-
-#group by run number and show mean viewing percentage per run
-step_avg_long = video_df %>%
-  group_by(step_position,video_duration) %>%
-  summarise(
-    viewed_5_percent = mean(viewed_five_percent),
-    viewed_10_percent = mean(viewed_ten_percent),
-    viewed_25_percent = mean(viewed_twentyfive_percent),
-    viewed_50_percent = mean(viewed_fifty_percent),
-    viewed_75_percent = mean(viewed_seventyfive_percent),
-    viewed_95_percent = mean(viewed_ninetyfive_percent),
-    viewed_100_percent = mean(viewed_onehundred_percent)
-  ) %>%
-  gather(viewed,percentage,viewed_5_percent:viewed_100_percent)
-
-#convert viewing percentages to numbers
-for(i in c(5,10,25,50,75,95,100)) {
-  step_avg_long$viewed[step_avg_long$viewed == paste("viewed_",i,"_percent",sep = "")] = i
-}
-
-
-#convert numbered viewing percentages from character to number
-step_avg_long$viewed = as.numeric(step_avg_long$viewed)
-
-cache('step_avg_long')
+#store 5 videos as vector in cache
+cache('highest_audience_drop_videos')

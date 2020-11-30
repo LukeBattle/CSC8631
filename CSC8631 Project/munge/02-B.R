@@ -1,26 +1,43 @@
-#convert to wide and calculate
-step_avg_wide = step_avg_long %>%
-  spread(viewed,percentage) %>%
-  rename(c("viewed_5" = "5" , "viewed_10" = "10", "viewed_25" = "25",
-           "viewed_50"="50","viewed_75"="75","viewed_95"="95","viewed_100"="100")) %>%
- mutate(percentage_drop_off = viewed_5 - viewed_95)
+#create vector of question-response files in data directory of project
+question_files = dir("data",pattern = "question-response")
 
-cache('step_avg_wide')
+#store them in cache
+cache('question_files')
 
-#arrange step_avg_wide in descending order by percentage drop off
+#set raw question-response data file for data understanding portion of report
+question_file_raw = read.csv(paste("data/",question_files[1],sep = ""))
 
-highest_audience_drop = step_avg_wide %>%
-  arrange(desc(percentage_drop_off))
+#store raw file in cache
+cache('question_file_raw')
 
-highest_audience_drop_videos = highest_audience_drop[1:5,]$step_position
+#initalise question-response data frame prior to data preparation
+question_df = NULL
 
-cache('highest_audience_drop_videos')
+#add corresponding run number and append each file to question-response data data frame
+for(i in 1:length(question_files)) {
+  question_response = read.csv(paste("data/",question_files[i],sep = ""))
+  Run = rep(i + first_question_run - 1, nrow(question_response))
+  question_response = cbind(question_response, Run)
+  question_df = rbind(question_df,question_response)
+}
+
+#add a binary indicator of if question was answered true or false
+question_df = mutate(question_df,correct_binary = ifelse(correct =="true",1,0))
+
+#remove empty cloze_response column
+question_df$cloze_response = NULL 
+
+#store-response data frame in cache
+cache('question_df')
 
 
 #investigate proportion of correct answers per run
 Runs = sort(unique(question_df$Run), decreasing = FALSE)
 
+#initialise percentage correct vector with length equal to amount of runs
 percentage_correct = numeric(length(Runs))
+
+#loop through each run in quetion_df, calculate percentage questions answered correctly and store in percentage correct vector
 for (i in sort(unique(question_df$Run),decreasing = FALSE)) {
   filtered_q_df = filter(question_df,Run == i)
   total = nrow(filtered_q_df)
@@ -29,7 +46,8 @@ for (i in sort(unique(question_df$Run),decreasing = FALSE)) {
   rm(filtered_q_df,total,question_correct)
 }
 
+#create data frame with runs and corresponding percentage of questions answered correctly
 correct_questions = as.data.frame(cbind(Runs,percentage_correct))
 
-
+#store correct questions data frame in cache
 cache('correct_questions')
