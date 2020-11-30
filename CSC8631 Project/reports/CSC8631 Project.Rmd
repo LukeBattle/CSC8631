@@ -29,7 +29,7 @@ In this report, we will use the CRISP-DM method to analyse a data set. This will
 
 ## Business Understanding 
 
-The first step in performing our CRISP-DM analysis is to gain an understanding of the business motivation for the analysis, with the primary goal of this analysis being to enhance Newcastle University's online resources. Specifcally, for the past several years, Newcastle University has ran a free online course called *Cyber Security: Safety at Home, Online, in life*. Several data sets have been compiled each time the course has been ran, detailing several facets of the user experience throughout the course.  Newcastle University seeks to utilise this data to enhance the quality of material taught outside of the classroom, and ultimately promote learner engagement with the course and Newcastle's wider online resources. To achieve this, different elements of the collected data will be examined over consecutive runs, with the aim of identifying any trends both within and between them that may indicate an area where user engagement could be improved.  
+The first step in performing our CRISP-DM analysis is to gain an understanding of the business motivation for the analysis, with the primary goal of this analysis being to enhance Newcastle University's online resources. Specifically, for the past several years, Newcastle University has ran a free online course called *Cyber Security: Safety at Home, Online, in life*. Several data sets have been compiled each time the course has been ran, detailing several facets of the user experience throughout the course.  Newcastle University seeks to utilise this data to enhance the quality of material taught outside of the classroom, and ultimately promote learner engagement with the course and Newcastle's wider online resources. To achieve this, different elements of the collected data will be examined over consecutive runs, with the aim of identifying any trends both within and between them that may indicate an area where user engagement could be improved.  
 
 Both of these elements will be explored and examined both individually and in relation to each other, with the ultimate aim of providing feedback to Newcastle University on how it can enhance the user experience of the course. This analysis will be constructed using CRISP-DM methodology and, as such, will be structured to reflect this.
 
@@ -90,7 +90,7 @@ We now have a a data frame featuring all of the available data for the video sta
 head(video_df_long)
 ```
 
-For the question respnse files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video stats data frame, however we established in the previous section that the variable in the question response data, "cloze response", is empty across all files. We should therefore remove this variable from our final data set to clean it. In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1. If this question has been answered incorrectly it will contain a 0. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course.
+For the question response files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video stats data frame, however we established in the previous section that the variable in the question response data, "cloze response", is empty across all files. We should therefore remove this variable from our final data set to clean it. In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1. If this question has been answered incorrectly it will contain a 0. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course.
 
 Once we have motivated our further analysis of the video stats, we can begin evaluating the effectiveness of each video in order to seek areas of improvement. Before beginning this analysis, we should prepare the data in the appropriate format. We will use similar fields that were used in our previous data construction, but we will use the field "step_position" instead of "Run" as an identifier for each unique video. "Step_position" is a code that is assigned to each video in the course, so each step_position will correspond to a video title, it simply allows for a more concise way of representing the same data. We can then take a mean average over every run for each video , which will inform us of how much of each video was watched by a percentage of users. To make visualisation of this data set easier, we will then convert to long format to give us the below:
 
@@ -139,7 +139,13 @@ This plot indicates that video with step position 1.5 loses the highest percenta
 lost_viewer_plot
 ```
 
-Again, this shows that the video with step position 1.5, "Privacy online and offline", loses over 20% of the audience from 5% of th video to 95% of it. Comparatively, the video with step position 2.11, "Exploring vulnerabilities in online payments" has slightly less than a 15% loss in viewers. In contrast to these videos, we can observe that the video with step position 2.17, "The million dollar contactless payment", has the highest viewer retention and loses less than 5% of the audience.
+We can also represent this data explicitly and with the inclusion of the video titles, as below:
+
+```{r echo=FALSE}
+knitr::kable(highest_audience_drop, col.names=c("Step Position","Video Title", "% Drop in Learner Audience"), align = "c", digits = 2)
+```
+
+Again, this shows that the video with step position 1.5, "Privacy online and offline", loses over 20% of the audience from 5% of the video to 95% of it. Comparatively, the video with step position 2.11, "Exploring vulnerabilities in online payments" has slightly less than a 15% loss in viewers. In contrast to these videos, we can observe that the video with step position 2.17, "The million dollar contactless payment", has the highest viewer retention and loses less than 5% of the audience. The mean average percentage loss is `r format(round(mean(highest_audience_drop$percentage_drop_off),2))`%.
 
 Whilst many factors could contribute to how engaged a learner is with a video, an aspect from the video stats data that we could investigate as a driver of this is the duration of the video. To visualise this, we can create a plot of video duration against the average percentage viewed over the course runs. Moreover, we will plot this for the percentage of people that watched 95% of the video, due to the aforementioned drop in viewers who watched all 100% of it. 
 
@@ -152,14 +158,27 @@ The above plot shows a clear negative correlation between the length of the vide
 
 ## Evaluation
 
+We initially set out to assess measures that Newcastle University could take in order to improve the efficacy of their online teaching resources, specifically the cyber security MOOC that they run. Thus far in this report, we have assessed the quality and suitability of the data supplied by Newcastle University, prepared data sets for the video stats and question response files and performed several pieces of analysis on them. Our analysis has shown several things. Firstly, we established that there is a slight positive correlation between the percentage of learners who watch the videos and the percentage of questions answered correctly in the course quiz. Our intention was to motivate the subsequent analysis on the video stats data, so that before seeking improvements in the course videos, we should assess the efficacy of the videos as a learning tool. Although our analysis suggests there is a correlation between the two course components, we could attribute this to many things. For instance, it may not be the videos themselves that can impact learning on the course, but poor quiz results like in run 4 could simply reflect learners less engaged with the course, irrespective of whether they watched the video or not.
+
+The second component in our analysis was a comparison of learner engagement between videos. As noted previously, we assumed that the videos remained unchanged in each run of the course, so when comparing videos we can take an average of learning engagement with each video over all course runs. This analysis highlighted several videos that had a particularly low retention of viewers, but of particular note was the video entitled "Privacy online and offline", which had a far lower audience retention rate than any other video, with a high drop off in audience during the first quarter of the video. It is therefore clear that this video could be improved with the goal of enhancing learner engagement. 
+
+The final part of our analysis consisted of an investigation into whether the duration of the videos could be leading to poor audience retention. Our results indicated that shorter videos do tend to increase learner engagement, with far less learners leaving videos early that were less than 100 seconds long. However, as with our first analysis this interpretation is far from conclusive and there are many other potential reasons that learners would be less engaged with some videos than others.
+
+Out of the results above from our analysis, the second part as an identification for an area of improvement in the course is the most significant. There is clearly scope to promote the efficacy of the video "Privacy online and offline" as a tool for learning, either by condensing the material into a shorter video or by another means. Then, the result of the video duration vs audience retention gave the second most compelling result. Although the result was not conclusive, it showed a clear correlation between the length of the videos and the amount of learners that stayed watching them. Where the second analysis identified the area of improvement, the third provided a method that this area could potentially be enhanced, therefore satisfying the business objectives that we intiially set. Finally, as the results only slightly agreed for runs 4,5 and 6, the comparison of the questions answered correctly in the quiz and the percentage of learners who watched 95%  of the videos yielded the most unsuccessful results. Even if our comparison was more successful, there are so many factors that could influence learners performance in the quiz that they would still be far from conclusive. Moreover, as this was intended as motivation for our analysis, 
+
+
+
+Improvements/where to go from here:
+
 - A lot of assumptions made in analysis
 -- assuming videos haven't changed
 -- correlations observed with video duration and question vs video proportion watched could have countless other drivers
-
+-- Evaluate preparation process, was it efficient?
 
 ## Deployment
 
-
+-- Reproducibility
+-- Presentation
 
 
 

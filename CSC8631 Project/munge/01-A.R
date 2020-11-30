@@ -1,7 +1,3 @@
-#manually update these for the data sets uploaded
-first_question_run = 1
-first_video_run = 3
-
 #recall previous column names for data checks
 video_col_names = c("step_position","title","video_duration","total_views","total_downloads","total_caption_views","total_transcript_views",
               "viewed_hd","viewed_five_percent","viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
@@ -16,6 +12,16 @@ video_names = c(1.10,1.14,1.17,1.19,1.50,2.10,2.11,2.17,2.40,3.10,3.14,3.15,3.20
 
 #create vector of video-stats files in data directory of project
 video_files = dir("data",pattern = "video-stats")
+
+#create empty vector of length equal to video files length
+video_files_numeric = numeric(length(video_files))
+
+#remove known patterns in file names to identify run number associated with each file in data subdirectory
+for (i in 1:length(video_files)) {
+  run_num = str_remove(video_files[i],"cyber-security-")
+  run_num = str_remove(run_num, "_video-stats.csv")
+  video_files_numeric[i] = as.integer(run_num)
+}
 
 #cache the list
 cache('video_files')
@@ -34,7 +40,7 @@ for(i in 1:length(video_files)) {
   video_stats = read.csv(paste("data/",video_files[i],sep = ""))
   #if (identical(colnames(video_stats),video_col_names)==FALSE) stop(paste("Column Names have changed for", video_files[i]))
   #if (identical(video_stats$step_position,video_names)==FALSE) stop(paste("The videos have changed for", video_files[i]))
-  Run = rep(i + first_video_run - 1, nrow(video_stats))
+  Run = rep(i + min(video_files_numeric) - 1, nrow(video_stats))
   video_stats = cbind(video_stats, Run)
   video_df = rbind(video_df,video_stats[,c("Run", "title", "step_position", "video_duration","viewed_five_percent",
                                            "viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
@@ -67,9 +73,12 @@ cache('video_df_long')
 
 #arrange video_df in descending order by percentage drop off per video
 highest_audience_drop = video_df %>%
-  group_by(step_position) %>%
+  group_by(step_position, title) %>%
   summarise(percentage_drop_off = mean(percentage_drop_off)) %>%
   arrange(desc(percentage_drop_off))
+
+#store resulting data frame in cache
+cache('highest_audience_drop')
 
 #save 5 videos with highest percentage drop off in viewers
 highest_audience_drop_videos = highest_audience_drop[1:5,]$step_position

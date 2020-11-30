@@ -4,6 +4,16 @@ question_files = dir("data",pattern = "question-response")
 #store them in cache
 cache('question_files')
 
+#create empty vector of length equal to video files length
+question_files_numeric = numeric(length(video_files))
+
+#remove known patterns in file names to identify run number associated with each file in data subdirectory
+for (i in 1:length(question_files)) {
+  run_num = str_remove(question_files[i],"cyber-security-")
+  run_num = str_remove(run_num, "_question-response.csv")
+  question_files_numeric[i] = as.integer(run_num)
+}
+
 #set raw question-response data file for data understanding portion of report
 question_file_raw = read.csv(paste("data/",question_files[1],sep = ""))
 
@@ -16,7 +26,7 @@ question_df = NULL
 #add corresponding run number and append each file to question-response data data frame
 for(i in 1:length(question_files)) {
   question_response = read.csv(paste("data/",question_files[i],sep = ""))
-  Run = rep(i + first_question_run - 1, nrow(question_response))
+  Run = rep(i + min(question_files_numeric) - 1, nrow(question_response))
   question_response = cbind(question_response, Run)
   question_df = rbind(question_df,question_response)
 }
