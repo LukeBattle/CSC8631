@@ -87,22 +87,14 @@ In order to prepare the data for analysis it would be helpful to compile all of 
 We now have a a data frame featuring all of the available data for the video stats from runs 3 to 7 of the course. However, this includes 29 variables. It would therefore be useful to refine this data set into the data that we would like to specifically assess and visualise in our subsequent analysis. Before performing a deeper analysis on the video stats data that we have prepared, it would be useful to first motivate this analysis. One way of doing this would be to look for a relationship between the viewing statistics per run and percentage of questions answered correctly in the question response data set. More specifically, does the amount of people who viewed the videos in each course iteration suggest anything about how many questions will be answered correctly? To investigate this, the variables that will be of most use are "Run" and the percentage of learners that viewed a set proportion of the video, ranging from 5% to 100%. We will calculate the mean average over all videos in a run of the course, for each proportion of the video viewed. In order to effectively visualise this, we can then convert this data frame to a long format, as below:
 
 ```{r echo=TRUE}
-head(viewing_avg_long)
+head(video_df_long)
 ```
 
 For the question respnse files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video stats data frame, however we established in the previous section that the variable in the question response data, "cloze response", is empty across all files. We should therefore remove this variable from our final data set to clean it. In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1. If this question has been answered incorrectly it will contain a 0. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course.
 
 Once we have motivated our further analysis of the video stats, we can begin evaluating the effectiveness of each video in order to seek areas of improvement. Before beginning this analysis, we should prepare the data in the appropriate format. We will use similar fields that were used in our previous data construction, but we will use the field "step_position" instead of "Run" as an identifier for each unique video. "Step_position" is a code that is assigned to each video in the course, so each step_position will correspond to a video title, it simply allows for a more concise way of representing the same data. We can then take a mean average over every run for each video , which will inform us of how much of each video was watched by a percentage of users. To make visualisation of this data set easier, we will then convert to long format to give us the below:
 
-```{r echo=TRUE}
-head(step_avg_long)
-```
-
 In order to judge more specifically which videos lost their audience the most, we will add a new variable to this data set, "percentage_drop_off", that calculates the difference in the percentage who viewed 5% of the video and the percentage who viewed 95% of the video. Why we have chosen these values will be discussed later in our analysis. Note that this data set is in wide form for ease of calculation of the "percentage_drop_off" variable. Thus, giving us the below data frame:
-
-```{r echo=TRUE}
-head(step_avg_wide)
-```
 
 
 ## Modelling
