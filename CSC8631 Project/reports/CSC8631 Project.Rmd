@@ -172,17 +172,9 @@ For the majority of the data preparation, steps have been taken where possible t
 
 
 
-Improvements/where to go from here:
-
-- A lot of assumptions made in analysis
--- assuming videos haven't changed
--- correlations observed with video duration and question vs video proportion watched could have countless other drivers
--- Evaluate preparation process, was it efficient?
-
 ## Deployment
 
--- Reproducibility
--- Presentation
+The analysis performed is fully reproducible, and any new course runs can be added to the "data" sub-directory within the project folder. Loading the project will then facilitate any new data files for video-stats or question-response to be filtered through the analysis and update the appropriate plots. Note that the reproducibility of the project is dependent on the both the files and filenames being in the format they are for this analysis. An an example, in run 3 the video-stats and question-response filenames would be "`r video_files[1]`" and "`r question_files[3]`", respectively. Furthermore, by taking care to avoid code that incrementally grows objects, the steps taking to prepare the data are computationally robust should significantly more data files be ran through the analysis. Once any new data files have been formatted appropriately and filtered through the corresponding graph, they will also appear in an interactive presentation created using shiny. The plots in the presentation are linked to the plots prepared in this analysis, and so any new data will be reflected there. None of this requires any user input and so the process is fully reproducible with minimal effort. The presentation surmises the three key points from the analysis in the comparison of video viewing vs question response, analysis of learner retention per video and the effect of video duration on this.
 
 
 

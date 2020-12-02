@@ -29,8 +29,6 @@ cache('video_files')
 #set raw video-stats data file for data understanding portion of report
 video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
 
-str(question_file_raw)
-
 #cache raw video-stats file
 cache('video_file_raw')
              
@@ -86,3 +84,12 @@ highest_audience_drop_videos = highest_audience_drop[1:5,]$step_position
 
 #store 5 videos as vector in cache
 cache('highest_audience_drop_videos')
+
+#format column names for presentation
+highest_audience_drop_shiny = highest_audience_drop %>%
+  rename("Video" = step_position, 
+         "Title" = title,
+         "% Audience Drop" = percentage_drop_off)
+
+#store resulting dataframe
+cache('highest_audience_drop_shiny')

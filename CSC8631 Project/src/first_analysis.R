@@ -6,6 +6,7 @@ theme_update(plot.title = element_text(hjust = 0.5))
 #plot graph, showing changing viewing percentage per run
 (run_plot  = ggplot(data = video_df_long, aes(x = viewed, y = value, color = factor(Run))) +  
   stat_summary(fun = mean, geom = "line") +
+    stat_summary(fun = mean, geom = "point") +
     labs(
       x = "% Video",
       y = "% Learners Viewing Video", 
@@ -40,6 +41,7 @@ theme_update(plot.title = element_text(hjust = 0.5))
 (step_plot_filtered = ggplot(data = filter(video_df_long, step_position %in% highest_audience_drop_videos), 
                              aes(x = viewed, y = value, color = factor(step_position))) +  
   stat_summary(fun = mean, geom = "line") + 
+    stat_summary(fun = mean, geom = "point") +
   labs(
     x = "% Video",
     y = "% Learners Viewing Video",
