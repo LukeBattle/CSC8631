@@ -40,4 +40,13 @@ check_rows = function (files, rows, column_number){
   return(return_string)
 }
 
-
+multiple_file_quality = function (files) {
+  missing_data = numeric(length(files))
+  for (i in 1:length(files)) {
+    temp_file = read.csv(paste("data/",files[i],sep = ""))
+    temp_diagnosis = diagnose(temp_file)
+    missing_data[i] = sum(temp_diagnosis$missing_count)
+  }
+  return(paste("Total Missing Count:", sum(missing_data)))
+}
+  

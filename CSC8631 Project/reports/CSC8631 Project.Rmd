@@ -96,32 +96,56 @@ check_rows(video_files,video_file_raw$step_position,which(colnames(video_file_ra
 ```
 
 
-An additional aspect of the video stats files that is important to consider for our analysis is whether the videos used in the course are the same for each run. If they are not, we could not fairly compare the efficacy of each video against each other when considering the results across runs. However, by examining the "duration" variable in each file we can see that this is identical for each video in every run, so we can assume for the purposes of this analysis that the videos have not been changed between runs. Note that we can confirm this with the below code, once again using function **check_rows()**:
+An additional aspect of the video stats files that is important to consider for our analysis is whether the videos used in the course are the same for each run. If they are not, we could not fairly compare the efficacy of each video against each other when considering the results across runs. However, by examining the "video_duration" variable in each file we can see that this is identical for each video in every run, so we can assume for the purposes of this analysis that the videos have not been changed between runs. We can confirm this with the below code, once again using function **check_rows()**:
 
 ```{r}
 check_rows(video_files,video_file_raw$video_duration,which(colnames(video_file_raw)=="video_duration"))
 ```
 
+For the question-response data set, we can compute the same high level analysis to improve our data understanding. We will perform the same checks as with the video-stats files. This time we will use question_files as our pre-prepared vector of question-response file names, and question_file_raw as an example file from the first run of the course.
 
-For the question response data set, we can compute the same high level analysis. However, unlike the video stats files this file has been prepared for all 7 runs of the course, and is not in exactly the same format. Each file has `r format(round(ncol(question_file_raw)))` columns, however the rows in each data file is dependent on how many learners took part in the corresponding run, and so varies between files. In total, all 7 files have `r format(round(nrow(question_df)), big.mark = ",")` rows. 
+```{r}
+check_empty(question_files)
+
+dim(question_file_raw)
+
+check_dimensions(question_files, dim(question_file_raw))
+
+colnames(question_file_raw)
+
+check_variables(question_files, colnames(question_file_raw))
+
+```
+
+So, we can see that none of the question-files are empty, they each have the same 10 variables in the same order but do not have the same number of rows in each file. We can observe that the number of rows in each of these files as related to the learner_id variable, which will vary between runs depending on the number of learners taking part in each course run. However, as the variables are all the same and in the same order, we can easily compile the question-response data files into a single file to compute further analysis on it.
 
 ### Data Quality
 
-We can now assess the data quality of each of these data sets using the dlookr package to see if there is any missing data in each file. Starting with the video stats file from the third run of the course, we calculate the following:
+We can now assess the data quality of each of these data sets using the **diagnose()** function from the**dlookr** package to see if there is any missing data in each file. Using custom function **multiple_data_quality()** we can apply this across multiple files and compute the total count of missing data for both the video-stats files and question-response files:
 
 ```{r echo=TRUE}
-diagnose(video_file_raw)
+multiple_file_quality(video_files)
+multiple_file_quality(question_files)
 ```
 
-The above table shows that there is no missing data for this video stats file, and analysis on the rest of the files for video stats gives the same result. Now, we can apply the same process to the question file from the first run.
+Therefore we can observe that there is no missing data in the video-stats files, however a considerable amount missing in the question-response files. To investigate where this is occurring, we can first use the **diagnose()** function on a single data question-response data file.
 
 ```{r echo=TRUE}
 diagnose(question_file_raw)
 ```
 
-The results indicate that all of the data for the "cloze_response" variable is missing, so we can consider removing this variable when we prepare our data files for analysis. Aside from this variable, the remainder of the data is intact. Analysis on this file for the rest of the course runs yields the same result, in that all data for "cloze_response" is absent whilst the rest of the data is of good quality.
+The results indicate that all of the data for the "cloze_response" variable is missing. We can examine if this is where the data is missing in all of our question-response files with the following code by counting the NA values within the cloze_response variable for each file.
 
+```{r}
+missing_data = numeric(length(question_files))
+  for (i in 1:length(question_files)) {
+    temp_file = read.csv(paste("data/",question_files[i],sep = ""))
+    missing_data[i] = sum(is.na(temp_file$cloze_response))
+  }
+sum(missing_data)
+```
 
+So the amount of data missing in the cloze_response variable in each file is equal to the total data missing across all question-response files. We should remove this variable when we prepare our data files for analysis as it is just needless clutter. Aside from this variable, the remainder of the data is intact, and we can now begin to prepare our data.
 
 ## Data Preparation
 
