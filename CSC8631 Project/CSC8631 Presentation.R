@@ -1,5 +1,8 @@
 library(shiny)
-source("src/first_analysis.R")
+source("src/q_vs_vid_analysis.R")
+source("src/vid_analysis.R")
+source("src/dur_analysis.R")
+
 
 ui = tabsetPanel(
     tabPanel("Motivation",fluidPage(splitLayout(cellWidths = c("50%","50%"),

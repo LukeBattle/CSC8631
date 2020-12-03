@@ -13,6 +13,9 @@ video_names = c(1.10,1.14,1.17,1.19,1.50,2.10,2.11,2.17,2.40,3.10,3.14,3.15,3.20
 #create vector of video-stats files in data directory of project
 video_files = dir("data",pattern = "video-stats")
 
+#cache the list
+cache('video_files')
+
 #create empty vector of length equal to video files length
 video_files_numeric = numeric(length(video_files))
 
@@ -23,8 +26,6 @@ for (i in 1:length(video_files)) {
   video_files_numeric[i] = as.integer(run_num)
 }
 
-#cache the list
-cache('video_files')
 
 #set raw video-stats data file for data understanding portion of report
 video_file_raw = read.csv(paste("data/",video_files[1],sep = ""))
@@ -34,6 +35,7 @@ cache('video_file_raw')
              
 #create empty list with length equal to amount of video files
 video_list = vector("list", length(video_files))
+
 
 #loop through video files, assign corresponding run to data then add to appropriate position in previously defined list
 for (i in 1:length(video_files)) {

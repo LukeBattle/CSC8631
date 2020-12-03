@@ -19,7 +19,9 @@ library(ProjectTemplate)
 load.project()
 
 #run analysis
-source("src/first_analysis.R")
+source("src/q_vs_vid_analysis.R")
+source("src/vid_analysis.R")
+source("src/dur_analysis.R")
 
 ```
 
@@ -145,40 +147,84 @@ missing_data = numeric(length(question_files))
 sum(missing_data)
 ```
 
-So the amount of data missing in the cloze_response variable in each file is equal to the total data missing across all question-response files. We should remove this variable when we prepare our data files for analysis as it is just needless clutter. Aside from this variable, the remainder of the data is intact, and we can now begin to prepare our data.
+So the amount of data missing in the cloze_response variable in each file is equal to the total data missing across all question-response files. As this is the only part of the file with missing data, we should remove this variable when we prepare our data files for analysis. Aside from this variable, the remainder of the data is all present, and we can now begin to prepare our data.
 
 ## Data Preparation
 
-In order to prepare the data for analysis it would be helpful to compile all of the files for a specific aspect of the user experience, such as video stats, into one file. This will allow us to easily perform analysis to see how the video stats changed over runs. Additionally, as we have assumed that the videos are unchanged between runs, this will give us more data to assess video performance against each other. In the previous section, we verified that the video stats data files have no issues with regards to missing data, and so there is no need to take any further cleaning steps. Additionally, as previously verified, each video file is in the same format, with the variables in the same order. Therefore we can bind each data frame under the preceding one. However, it would be useful for our subsequent analysis for us to include an identifier of what iteration of the course the data corresponds to. This has been added into the data frame as the variable, "Run". 
+As we have verified in the previous section that all of the video-stats files have the same variable order with no missing data, to prepare the data we can simply stack the data from each file. I initially performed this by creating an empty object and binding each data frame under the preceding one, whilst looping over the files in the data subdirectory. Whilst this did create the desired file containing all of the video-stats data, the method involved incremental object growth. This means that if this data pipeline was used on significantly more video-stats data files in the future, the data preparation phase would rapidly become computationally heavy. We can refine this process by instead inputting the data from each file into a list with pre-defined length, then using function **bind_rows()** from the *dplyr* package so that we can completely avoid incremental object growth. The code from this is shown below:
 
-We now have a a data frame featuring all of the available data for the video stats from runs 3 to 7 of the course. However, this includes 29 variables. It would therefore be useful to refine this data set into the data that we would like to specifically assess and visualise in our subsequent analysis. Before performing a deeper analysis on the video stats data that we have prepared, it would be useful to first motivate this analysis. One way of doing this would be to look for a relationship between the viewing statistics per run and percentage of questions answered correctly in the question response data set. More specifically, does the amount of people who viewed the videos in each course iteration suggest anything about how many questions will be answered correctly? To investigate this, the variables that will be of most use are "Run" and the percentage of learners that viewed a set proportion of the video, ranging from 5% to 100%. We will calculate the mean average over all videos in a run of the course, for each proportion of the video viewed. In order to effectively visualise this, we can then convert this data frame to a long format, as below:
+```{r eval = FALSE}
+#create empty list with length equal to amount of video files
+video_list = vector("list", length(video_files))
+
+#loop through video files, assign corresponding run to data then add to appropriate 
+#position in previously defined list
+for (i in 1:length(video_files)) {
+  video_stats = read.csv(paste("data/",video_files[i],sep = ""))
+  Run = rep(video_files_numeric[i], nrow(video_stats))
+  video_stats = cbind(video_stats, Run)
+  video_list[[i]]=video_stats[,c("Run", "title", "step_position", "video_duration",
+                                 "viewed_five_percent","viewed_ten_percent",
+                                 "viewed_twentyfive_percent","viewed_fifty_percent",
+                                 "viewed_seventyfive_percent", "viewed_ninetyfive_percent",
+                                 "viewed_onehundred_percent")]
+}
+
+#use bind_rows to take data in list and create data frame, then add new column that finds 
+#difference between the percentage of learners that viewed 5% and 95% of the videos
+video_df = bind_rows(video_list) %>%
+  mutate(percentage_drop_off = viewed_five_percent - viewed_ninetyfive_percent)
+```
+
+Due to the iterative relationship between the *Data Preparation* and *Modelling* phases that is inherent to CRISP-DM, other components in the above code such as the specific variable selection and introduction of derived attributes were not applied at first. My initial runs involved performing the compilation of data for all variables and then using the **group_by()** and **summarise()** functions from *dplyr* to create new summary data frames to examine and plot the impact of different variables. This allowed me to hone in on the specific variables of importance to the data analysis pipeline and remove the rest. Additionally, the data is still summarised but this is now done when creating the plots, as opposed to creating different data frames for different plots and in doing so cluttering the data analysis pipeline. The only exception to this is the data frame "highest_audience_drop", from which the videos with the highest percentage decrease in audience can be derived, as well as an informative table used within this report.
+
+In the data preparation for the video-stats files, several new variables have also been added. The addition of the "Run" variable has been included in every iteration of this phase, as it would be intuitively useful in our subsequent analysis for us to include an identifier of what run of the course the data corresponds to. With the inclusion of this variable, I have taken care to ensure this was done in a fully reproducible manner with no user input required. The below code, located in 01-A.R in the munge subdirectory, takes the course run from the file name:
+
+```{r eval=FALSE}
+#create empty vector of length equal to video files length
+video_files_numeric = numeric(length(video_files))
+
+#remove known patterns in file names to identify run number associated with
+#each file in data subdirectory
+for (i in 1:length(video_files)) {
+  run_num = str_remove(video_files[i],"cyber-security-")
+  run_num = str_remove(run_num, "_video-stats.csv")
+  video_files_numeric[i] = as.integer(run_num)
+}
+
+```
+
+Another variable addition that was added in later versions of this analysis was the "percentage_drop_off", calculated by finding the difference between the variables "viewed_five_percent" and "viewed_ninetyfive_percent". The motivation for this inclusion will be discussed when reviewing the analysis results.
+
+The final step taken in our data preparation of the video-stats files, is to reformat the data frame from "wide" into "long" format using *dplyr* function **pivot_longer()**. This allowed us to plot all of the variables relating to the percentage of the video viewed together. An example of the final data frame can be seen below:
+
 
 ```{r echo=TRUE}
 head(video_df_long)
 ```
 
-For the question response files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video stats data frame, however we established in the previous section that the variable in the question response data, "cloze response", is empty across all files. We should therefore remove this variable from our final data set to clean it. In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1. If this question has been answered incorrectly it will contain a 0. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course.
+For the question response files, we can facilitate easier cross-run analysis by compiling all files into one, and adding an identifier labeling the run that the data pertains to. This can be performed in the same fashion as with the video-stats data frame, however we established in the previous section that the variable "cloze response" in the question-response data is empty in all files. We should therefore remove this variable from our final data set. 
 
-Once we have motivated our further analysis of the video stats, we can begin evaluating the effectiveness of each video in order to seek areas of improvement. Before beginning this analysis, we should prepare the data in the appropriate format. We will use similar fields that were used in our previous data construction, but we will use the field "step_position" instead of "Run" as an identifier for each unique video. "Step_position" is a code that is assigned to each video in the course, so each step_position will correspond to a video title, it simply allows for a more concise way of representing the same data. We can then take a mean average over every run for each video , which will inform us of how much of each video was watched by a percentage of users. To make visualisation of this data set easier, we will then convert to long format to give us the below:
-
-In order to judge more specifically which videos lost their audience the most, we will add a new variable to this data set, "percentage_drop_off", that calculates the difference in the percentage who viewed 5% of the video and the percentage who viewed 95% of the video. Why we have chosen these values will be discussed later in our analysis. Note that this data set is in wide form for ease of calculation of the "percentage_drop_off" variable. Thus, giving us the below data frame:
+In order to calculate the percentage of questions answered correctly per run, it would be useful to transform the "correct" variable into a more calculation-friendly format. We will add a new column, "correct_binary", where if a question has been answered correctly this variable will contain a 1, or 0 for the converse. This will enable us to easily calculate the percentage of questions answered correctly within each run of the course. Using this, we can input create a small data frame reflecting the run and the corresponding percentage of questions answered correctly.
 
 
 ## Modelling
 
-Now that both data sets are appropriately formatted, we will begin our analysis of the data. First of all, we will investigate if there is a relationship between the percentage of people who watched the videos in the course, and their results in the multiple choice quiz. To examine this, we will calculate the percentage of questions answered correctly for the each run of the course. 
-
-```{r echo=FALSE}
-knitr::kable(correct_questions, col.names=c("Run", "% Correct"), align = "c", digits = 2)
-```
-
-To compare this to the percentage of people who watched the videos, we will first take an average over each run of the percentage of people that watched the video. To be fully clear in our analysis, we will also split these average out into percentage of the video viewed. This gives the following plot:
+Now that both data sets are appropriately constructed, we will begin our analysis of the data. To motivate our analysis of the video-stats data, we should first assess if watching the videos can improve learning on the course. To achieve this, we will investigate if there is a relationship between the percentage of people who watched the videos in the course, and their results in the multiple choice quiz. To examine this, we will first plot the percentage of the videos viewed on average by learners on the course, and show how this varies per course run.
 
 ```{r echo=FALSE}
 run_plot
 ```
 
-In the above plot, we can observe a steady decline of people watching the video as it progresses up until 95% of the video. A steep decline can then be seen after this with the amount of people who viewed 100% of the video. This intuitively makes sense as many viewers may end the video when there are only a few seconds left when it is obvious that the the important information in the video has been given. This means that the percentage of people that viewed the entire video is not the best metric by which we can judge how many people watched the video. The percentage of users that watched 95% of the video would be a more suitable metric, as they have still effectively watched the entirety of the video just may have not watched the final few seconds. We can now visualise the percentage of users that viewed 95% of all of the videos for each run of the course, and compare this to a plot of how many questions were answered correctly for each course iteration:
+In the above plot, we can observe a steady decline of people watching the video as it progresses up until 95% of the video. A steep decline can then be seen after this to the percentage of learners on the course who viewed 100% of the video. This intuitively makes sense as many viewers may end the video when there are only a few seconds left when it is obvious that the the important information in the video has been given, and so would not register as having watched 100% of the video. This means that the percentage of people that viewed the entire video is not the best metric by which we can judge how many people watched the video. The percentage of users that watched 95% of the video would be a more suitable metric, as they have still effectively watched the entirety of the video just may have not watched the final few seconds.
+
+We will now display our calculated values of the percentage of questions answered correctly for the each run of the course. 
+
+```{r echo=FALSE}
+knitr::kable(correct_questions, col.names=c("Run", "% Correct"), align = "c", digits = 2, "simple")
+```
+
+To compare this to the percentage of people who watched the videos we will now visualise the percentage of users that viewed 95% of all of the videos on average for each run of the course, and compare this to a plot of how many questions were answered correctly for each course iteration:
 
 
 ```{r echo=FALSE}
@@ -187,19 +233,19 @@ grid.arrange(question_plot,run_plot2,nrow = 2)
 
 From this plot we can see clearly that in the fourth run of the MOOC course, there was a drop both in the percentage of questions answered correctly and the amount of people who viewed the course videos. Additionally, in the fifth run both the percentage of people who watched 95% of the videos increased along with the percentage of questions answered correctly. In the sixth run, both the video viewership and questions answered correctly stay relatively high. However, in the seventh run the questions answered correctly stays high whilst the percentage of people who fully watched the videos plummets. In the third run, we can also observe that the highest percentage of questions are answered correctly whilst the percentage of users that watched 95% of the videos remained quite low. These observations would suggest that there is a loose relationship between these two, as we see a similar trend specifically from run 4 to 6. Having said this, rather than causing more questions to be answered correctly, a higher percentage of users that viewed the videos may indicate more interested users in that run who may be more interested in the course and thus excel more in the questions on average. 
 
-Now that we have demonstrated there is some relationship between the use of the video and outcome of the multiple choice quiz, we should look further into how the videos might be improved. In order to assess this, we will assess the average percentage of users who viewed the videos for varying lengths of time, for each video in the course. As previously noted, we are assuming that the videos have remained unaltered over runs due to the identical duration, so these average will be taken for each video over every run. Plotting the results of this gives us the following plot:
+Now that we have demonstrated there is some relationship between the use of the video and outcome of the multiple choice quiz, we should look further into how the videos might be improved. In order to assess this, we will assess the percentage of the videos viewed on average by learners on the course for each video. As previously noted, we are assuming that the videos have remained unaltered over runs due to the identical duration, so these averages will be taken for each video over every run. In addition, recall from our earlier *Data Understanding* section that the "step_position" differentiates each video, and will match one-to-one with the video titles. In this plot we will use it to be more space efficient.
 
 ```{r echo=FALSE}
 step_plot
 ```
 
-As this plot appears cluttered, it would be useful to only focus on a selection of the videos that had the highest drop off in audience as the video progressed. We will therefore filter the above plot to show only the top 5 videos with the highest % drop in audience to produce the below plot:
+As this plot is cluttered and so difficult to fully interpret, it would be useful to only focus on a selection of the videos that had the highest drop off in audience as the video progressed. We will therefore filter the above plot to show only the top 5 videos with the highest percentage drop in audience to produce the below plot:
 
 ```{r echo=FALSE}
 step_plot_filtered
 ```
 
-This plot indicates that video with step position 1.5 loses the highest percentage of it's audience. This corresponds to the video called "Privacy online and offline". What is particularly notable with this video, is the steep drop in audience from 5% to 25% of the video. Other videos in the above two plots have a fairly consistent gradient of audience decline as the video progresses. This video displays a significantly higher drop in audience that any other video on the course over all runs from 5% to 95% of the video, as shown in the below column chart:
+This plot indicates that video with step position 1.5 loses the highest percentage of it's audience. This corresponds to the video called "Privacy online and offline". What is particularly notable with this video, is that there is a steep drop in audience from 5% to 25% of the video. Other videos in the above two plots have a fairly consistent gradient of audience decline as the video progresses. This video displays a significantly higher drop in audience that any other video on the course over all runs from 5% to 95% of the video, as shown in the below column chart:
 
 
 ```{r echo=FALSE}
@@ -209,39 +255,39 @@ lost_viewer_plot
 We can also represent this data explicitly and with the inclusion of the video titles, as below:
 
 ```{r echo=FALSE}
-knitr::kable(highest_audience_drop, col.names=c("Step Position","Video Title", "% Drop in Learner Audience"), align = "c", digits = 2)
+knitr::kable(highest_audience_drop, col.names=c("Step Position","Video Title", "% Drop in Learner Audience"), align = "c", digits = 2, "simple")
 ```
 
 Again, this shows that the video with step position 1.5, "Privacy online and offline", loses over 20% of the audience from 5% of the video to 95% of it. Comparatively, the video with step position 2.11, "Exploring vulnerabilities in online payments" has slightly less than a 15% loss in viewers. In contrast to these videos, we can observe that the video with step position 2.17, "The million dollar contactless payment", has the highest viewer retention and loses less than 5% of the audience. The mean average percentage loss is `r format(round(mean(highest_audience_drop$percentage_drop_off),2))`%.
 
-Whilst many factors could contribute to how engaged a learner is with a video, an aspect from the video stats data that we could investigate as a driver of this is the duration of the video. To visualise this, we can create a plot of video duration against the average percentage viewed over the course runs. Moreover, we will plot this for the percentage of people that watched 95% of the video, due to the aforementioned drop in viewers who watched all 100% of it. 
+Whilst many factors could contribute to how engaged a learner is with a video, an aspect from the video-stats data that we could investigate as a driver of this is the duration of the video. To visualise this, we will plot the percentage of people that watched 95% of the videos on average over all course runs against the video duration. 
 
 ```{r echo=FALSE}
 duration_plot
 ```
 
-The above plot shows a clear negative correlation between the length of the video and the percentage of people who watched 95% of it. Interestingly, this correlation is particularly prevalent in the first 300 seconds. After 300 seconds, the percentage of the retained learner throughout the video increased again, but not in the vicinity of retention shown in the videos with small duration. 
+The above plot shows a clear negative correlation between the length of the video and the percentage of learners on the course who watched 95% of it. Interestingly, this correlation is particularly prevalent in the first 300 seconds. After 300 seconds, the percentage of retained learners throughout the video increased again, but not in the vicinity of retention shown in the videos with small duration. 
 
 
 ## Evaluation
 
-We initially set out to assess measures that Newcastle University could take in order to improve the efficacy of their online teaching resources, specifically the cyber security MOOC that they run. Thus far in this report, we have assessed the quality and suitability of the data supplied by Newcastle University, prepared data sets for the video stats and question response files and performed several pieces of analysis on them. Our analysis has shown several things. Firstly, we established that there is a slight positive correlation between the percentage of learners who watch the videos and the percentage of questions answered correctly in the course quiz. Our intention was to motivate the subsequent analysis on the video stats data, so that before seeking improvements in the course videos, we should assess the efficacy of the videos as a learning tool. Although our analysis suggests there is a correlation between the two course components, we could attribute this to many things. For instance, it may not be the videos themselves that can impact learning on the course, but poor quiz results like in run 4 could simply reflect learners less engaged with the course, irrespective of whether they watched the video or not.
+We initially set out to seek measures that Newcastle University could take in order to improve the efficacy of their online teaching resources, specifically the cyber security MOOC that they run. Thus far in this report, we have assessed the quality and suitability of the data supplied by Newcastle University, prepared data sets for the video stats and question response files and performed several pieces of analysis on them. Our analysis has shown several things. Firstly, we established that there is a slight positive correlation between the percentage of learners who watch the videos and the percentage of questions answered correctly in the course quiz. Our intention was to motivate the subsequent analysis on the video stats data, so that before seeking improvements in the course videos, we should assess the efficacy of the videos as a learning tool. Although our analysis suggests there is a correlation between the two course components, we could attribute this to many things. For instance, it may not be the videos themselves that can impact learning on the course, but poor quiz results like in run 4 could simply reflect learners less engaged with the course, irrespective of whether they watched the video or not.
 
 The second component in our analysis was a comparison of learner engagement between videos. As noted previously, we assumed that the videos remained unchanged in each run of the course, so when comparing videos we can take an average of learning engagement with each video over all course runs. This analysis highlighted several videos that had a particularly low retention of viewers, but of particular note was the video entitled "Privacy online and offline", which had a far lower audience retention rate than any other video, with a high drop off in audience during the first quarter of the video. It is therefore clear that this video could be improved with the goal of enhancing learner engagement. 
 
-The final part of our analysis consisted of an investigation into whether the duration of the videos could be leading to poor audience retention. Our results indicated that shorter videos do tend to increase learner engagement, with far less learners leaving videos early that were less than 100 seconds long. However, as with our first analysis this interpretation is far from conclusive and there are many other potential reasons that learners would be less engaged with some videos than others.
+The final part of our analysis consisted of an investigation into whether the duration of the videos could be contributing factor in audience retention. Our results indicated that shorter videos do tend to increase learner engagement, with far less learners leaving videos early that were less than 100 seconds long. However, as with our first analysis this interpretation is far from conclusive and there are many other potential reasons that learners would be less engaged with some videos than others.
 
-Out of the results above from our analysis, the second part as an identification for an area of improvement in the course is the most significant. There is clearly scope to promote the efficacy of the video "Privacy online and offline" as a tool for learning, either by condensing the material into a shorter video or by another means. Then, the result of the video duration vs audience retention gave the second most compelling result. Although the result was not conclusive, it showed a clear correlation between the length of the videos and the amount of learners that stayed watching them. Where the second analysis identified the area of improvement, the third provided a method that this area could potentially be enhanced, therefore satisfying the business objectives that we initially set. Finally, as the results only slightly agreed for runs 4,5 and 6, the comparison of the questions answered correctly in the quiz and the percentage of learners who watched 95%  of the videos yielded the most unsuccessful results. Even if our comparison was more successful, there are so many factors that could influence learners performance in the quiz that they would still be far from conclusive. 
+Out of the results above from our analysis, the second part as an identification for an area of improvement in the course is the most significant. There is clearly scope to promote the efficacy of the video "Privacy online and offline" as a tool for learning, either by condensing the material into a shorter video or by another means. Then, the result of the video duration vs audience retention gave the second most compelling result. Although the result was not conclusive, it showed a clear correlation between the length of the videos and the amount of learners that watched them. Where the second analysis identified the area of improvement, the third provided a method that this area could potentially be enhanced, therefore satisfying the business objectives that we initially set. Finally, as the results only slightly agreed for runs 4,5 and 6, the comparison of the questions answered correctly in the quiz and the percentage of learners who watched 95%  of the videos yielded the most unsuccessful results. Even if our comparison was more successful, there are so many factors that could influence learners performance in the quiz that they would still be far from conclusive. 
 
-These analyses could be improved and built upon in several ways. Our first analysis could be taken to a more granular level, and consider comparing specific sections of relevance between the quiz and the videos, i.e. comparing a video to the section of the quiz that it relates to. Additionally, continually updating this analysis as more course runs occur would improve all aspects of analysis, as more data could either disprove or reinforce some of our intepretations with regard to the analysis outcomes.
+These analyses could be improved and built upon in several ways. Our first analysis could be taken to a more granular level, and consider comparing specific sections of relevance between the quiz and the videos, i.e. comparing a video to the section of the quiz that it relates to. Additionally, continually updating this data pipeline as more course runs occur would improve all aspects of analysis, as more data could either disprove or reinforce some of our interpretations with regard to the analysis outcomes.
 
-For the majority of the data preparation, steps have been taken where possible to promote computing efficiency. When empty vectors have been created to store results, their length has been specified so that it is populated efficiently. In particular, the method used in preparing the data frames that we have performed analysis on has been done efficiently. Rather than using rbind() with an empty data frame, we used a list with a specified length to store the data from each file and then the function bind_rows() to compile them. These methods allow us to avoid increasing object size incrementally in our data preparation, which would not scale well if we were to perform the analysis for significantly more files. Having said that, parallel computing has not been used in any data preparation steps, so if this were to be improved it could be by using parallel computing to enhance the efficiency of the data preparation process. 
+For the majority of the data preparation, steps have been taken where possible to promote computing efficiency. When empty vectors have been created to store results, their length has been specified so that incremental object growth is avoided. A specific example of this is the method used in preparing the data frames that we have performed analysis on. Rather than using rbind() with an empty data frame, we used a list with a specified length to store the data from each file and then the function bind_rows() to compile them. These methods allow us to avoid increasing object size incrementally in our data preparation, which would not scale well if we were to perform the analysis for significantly more files. Having said that, parallel computing has not been used in any data preparation steps, so if this were to be improved it could be by using parallel computing to enhance the efficiency of the data preparation process. 
 
 
 
 ## Deployment
 
-The analysis performed is fully reproducible, and any new course runs can be added to the "data" sub-directory within the project folder. Loading the project will then facilitate any new data files for video-stats or question-response to be filtered through the analysis and update the appropriate plots. Note that the reproducibility of the project is dependent on the both the files and filenames being in the format they are for this analysis. An an example, in run 3 the video-stats and question-response filenames would be "`r video_files[1]`" and "`r question_files[3]`", respectively. Furthermore, by taking care to avoid code that incrementally grows objects, the steps taking to prepare the data are computationally robust should significantly more data files be ran through the analysis. Once any new data files have been formatted appropriately and filtered through the corresponding graph, they will also appear in an interactive presentation created using shiny. The plots in the presentation are linked to the plots prepared in this analysis, and so any new data will be reflected there. None of this requires any user input and so the process is fully reproducible with minimal effort. The presentation surmises the three key points from the analysis in the comparison of video viewing vs question response, analysis of learner retention per video and the effect of video duration on this.
+The analysis performed is fully reproducible, and any new course runs can be added in the same location should the data pipeline be used for analysis on new data. Loading the project will then facilitate any new data files for video-stats or question-response to be filtered through the analysis and update the appropriate plots. Note that the reproducibility of the project is dependent on the both the files and filenames being in the format they are for this analysis. An an example, in run 3 the video-stats and question-response filenames would be "`r video_files[1]`" and "`r question_files[3]`", respectively. Furthermore, by taking care to avoid code that incrementally grows objects, the steps taking to prepare the data are computationally robust should significantly more data files be ran through the data analysis pipeline. Once any new data files have been formatted appropriately and filtered through the corresponding graph, they will also appear in an interactive presentation created using shiny. The plots in the presentation are linked to the plots prepared in this analysis, and so any new data will be reflected there. None of this requires any user input beyond loading the data and the project, and so the process is fully reproducible with minimal effort. The presentation surmises the three key points from the analysis in the comparison of video viewing vs question response, analysis of learner retention per video and the effect of video duration on this.
 
 
 
