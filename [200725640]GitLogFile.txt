@@ -1,0 +1,173 @@
+commit 29a2d649bcd859f13f9c298c1b112036cedda2ac
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Dec 3 22:05:51 2020 +0000
+
+    Split up analysis into three files for each stage in the analysis. Edited README file to inform data analysis pipeline user how to use file.
+
+commit 8944e91aafa92adf1edf789b77c5a19a3974dc69
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Dec 3 13:42:10 2020 +0000
+
+    Improved quality of data quality checks
+
+commit 1b472d02f346a85e58e9e9ad1a034dda5a2e4f34
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Dec 3 10:27:43 2020 +0000
+
+    Introduced several more functions to rigorously check files
+
+commit 1f13856f2a485c6c35ae9d0bb8318603d95ac352
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Thu Dec 3 09:05:09 2020 +0000
+
+    Create function that demonstrates lack of data in some files.
+
+commit 875c37cc8a87c2f15cdc8ec92fdfa30c0b4fc838
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:18:04 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit 0b7452ec909fd13aec87f0bd5b914f9edbe9bda1
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:17:11 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit 46686c025b2990c8f5ee73b7145c5bcd5a749812
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:16:47 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit b158e9684c9b1b9921dae89306c403604ba2b6b0
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:16:17 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit 9eac3713fb9237129f7aec2f7c4a952d0c42de33
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:15:44 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit d76eea34c67f077f05a51ab83b0ddfb3f3ff4233
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:15:10 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit 1cebead7ad5bd309cf2fd3f55038277636e33254
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 18:14:33 2020 +0000
+
+    Adding unused data files in project in small batches
+
+commit 4e3f8db3721f39fa6b5db5ee2270521808476f1c
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Wed Dec 2 17:57:08 2020 +0000
+
+    Significantly changed presentation format. Reformatted highest_audience_drop and created new data frame for shiny presentation highest_audience_drop_shiny.
+
+commit 2e8ac715f5c1fe485fa2d312881dab61678d98e8
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Nov 30 16:29:03 2020 +0000
+
+    Changed method of data file compilation to avoid object size incrementing and therefore hugely improve efficiency of data preparation code.
+
+commit e98c4786514fa794953a84f2887005de8b6dfe0f
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Nov 30 14:45:41 2020 +0000
+
+    Saved small data frame of highest audience drop per video with title and step position included. Also automated identification of first run in files for question-response and video-stats files by stripping away known string patterns in file names.
+
+commit 0161fc235210d77bd0350a751c64d3d86aabbb75
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Nov 30 12:46:47 2020 +0000
+
+    Clean cache and test updated munge files by uploading new files to cache.
+
+commit 95166a4baaa2f57605746fcc3e33470132249eb2
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Mon Nov 30 10:51:18 2020 +0000
+
+    Clean munge files to prepare only necessary data frames, rather than summary data frames. Plots have been changed in first_analysis to calculate summaries of the data frames now. Munge files broken up into 3 files, for video, question and enrolments analysis.
+
+commit 645abe37027b5c7c4b9ed4295d99c83ec1c67d3a
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sun Nov 29 11:59:04 2020 +0000
+
+    Added video_duration as a variable in step_avg_long data in order to visualise it against audience retention for the videos.
+
+commit 36654d187de28a86fce5ba0216fa7b3b2dc71dd6
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sun Nov 29 10:15:32 2020 +0000
+
+    Created a vector for storing top 5 videos with highest % drop in audience. Then used this to filter step_plot to be less cluttered.
+
+commit e58dcdef3b507c45d0e79dc759f6fa0c8f625f59
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sat Nov 28 23:11:05 2020 +0000
+
+    Added plot to clearly represent decline in viewers for each video
+
+commit 0df56a4d679bf73cab8525a07903a065ecf60ad2
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sat Nov 28 16:05:30 2020 +0000
+
+    Set tests to labels so that they are not wrongly implemented and updated report with data understanding and data preparation.
+
+commit 50845ac27926e0cd2d7e26ae2b8aa3609acd9535
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sat Nov 28 12:44:49 2020 +0000
+
+    Experimenting with tests to check file format for video and question files. Add dlookr package to config to perform data quality diagnosis.
+
+commit 0ed7f4b0f479b9b578ee021235b134dc864313bb
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Sat Nov 28 10:14:51 2020 +0000
+
+    Adding examples of raw data files for question and video data to munge file and cache. Added some discussion about these to report file in the 'Data Understanding' section.
+
+commit ac43d8a856ae8dbfff0a39be062d2cd00b498f10
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 19:38:58 2020 +0000
+
+    Added new munge file that creates vector of missing data percentages for the enrolment files.
+
+commit 7029bc5be71fc27a7f081dbd4d7e14744f647ef5
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 10:25:01 2020 +0000
+
+    Adding other data files for comparison
+
+commit 4514650074abe7560b347305616a2384a427a329
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 09:34:12 2020 +0000
+
+    Set munging to FALSE now cache is loaded and test report production
+
+commit e7b1fc0469928dda53d77d9a0f3e8aae6a34d28e
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 09:29:57 2020 +0000
+
+    Adding previous work to Git
+
+commit 15496ce59750077c806d4216c770319ee136dbcb
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 09:25:05 2020 +0000
+
+    Adding the MOOC Data
+
+commit a78473393faae49a22d9175b6b033b4efe739695
+Author: LukeBattle <mail@lukebattle.com>
+Date:   Fri Nov 27 09:17:46 2020 +0000
+
+    Create ProjectTemplate
+
+commit d654def221308c223455d48fdfbbd4b487ed6688
+Author: LukeBattle <57643256+LukeBattle@users.noreply.github.com>
+Date:   Fri Nov 27 08:29:28 2020 +0000
+
+    Initial commit
