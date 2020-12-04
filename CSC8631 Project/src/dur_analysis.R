@@ -1,5 +1,5 @@
-library(ProjectTemplate)
-load.project()
+
+#align plot titles in centre
 theme_update(plot.title = element_text(hjust = 0.5))
 
 #plotting video duration against percentage of course learners who viewed 95% of video

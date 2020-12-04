@@ -1,5 +1,5 @@
-library(ProjectTemplate)
-load.project()
+
+#align plot titles in centre
 theme_update(plot.title = element_text(hjust = 0.5))
 
 #plot graph, showing changing viewing percentage per run
