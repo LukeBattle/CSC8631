@@ -60,12 +60,14 @@ video_df_long = video_df %>%
   pivot_longer(viewed_five_percent:viewed_onehundred_percent, 
                names_to = "viewed")
 
-#convert viewed variable to integer for plotting
+#set variable names that are to be changed
 variables_to_change = c("viewed_five_percent","viewed_ten_percent","viewed_twentyfive_percent","viewed_fifty_percent",
 "viewed_seventyfive_percent", "viewed_ninetyfive_percent","viewed_onehundred_percent")
 
+#set numbers to change variables to
 variables_changed_to = as.integer(c(5,10,25,50,75,95,100))
 
+#change viewed variables to integer values corresponding to the percent viewed
 video_df_long$viewed[video_df_long$viewed == variables_to_change] = as.integer(variables_changed_to)
 video_df_long$viewed = as.integer(video_df_long$viewed)
 

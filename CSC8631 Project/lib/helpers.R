@@ -1,3 +1,5 @@
+#loop through multiple files to check if they are empty, only requiring vector
+#of filenames in data sub-directory as input
 check_empty = function (files) {
   empty_flag = logical(length(files))
   for (i in 1:length(files)) {
@@ -8,7 +10,9 @@ check_empty = function (files) {
   return(paste(sum(as.integer(empty_flag)), "out of",length(files), "files are empty"))                     
              
 }
-  
+
+#loop through multiple files to check if they are have the same dimensions as the "dimensions" input, requiring vector
+#of filenames in data sub-directory and dimensions to check against as input
 check_dimensions = function (files, dimensions) {
   dims_equal = logical(length(files))
   for (i in 1:length(files)) {
@@ -20,6 +24,8 @@ check_dimensions = function (files, dimensions) {
   
 }
 
+#loop through multiple files to check if they are have the same variables as the "variables" input, requiring vector
+#of filenames in data sub-directory and variables to check against as input
 check_variables = function (files, variables) {
   variables_equal = logical(length(files))
   for (i in 1:length(files)) {
@@ -30,6 +36,8 @@ check_variables = function (files, variables) {
   return(return_string)
 }
 
+#loop through multiple files to check if they are have the same rows as the "rows" input, requiring vector
+#of filenames in data sub-directory, rows to check against and column number of comparison as input
 check_rows = function (files, rows, column_number){
   rows_equal = logical(length(files))
   for (i in 1:length(files)) {
@@ -40,6 +48,8 @@ check_rows = function (files, rows, column_number){
   return(return_string)
 }
 
+#loop through multiple files to check if they to count missing data,only requiring vector
+#of filenames in data sub-directory as input
 multiple_file_quality = function (files) {
   missing_data = numeric(length(files))
   for (i in 1:length(files)) {
